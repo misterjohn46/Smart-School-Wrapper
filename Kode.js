@@ -90,7 +90,16 @@ function onOpen() {
   ui.createMenu("ADMIN SEKOLAH")
     .addItem("Sync Semua Data", "SYNC_SEMUA_DATA")
     .addSeparator()
+    .addItem("Setup RDM Sync", "SETUP_RDM_SYNC")
+    .addItem("Tarik ID Siswa RDM", "TARIK_ID_SISWA_RDM")
+    .addItem("Tarik ID Guru RDM", "TARIK_ID_GURU_RDM")
+    .addItem("Tarik Mapel RDM", "TARIK_MAPEL_RDM")
+    .addItem("Tarik Kelas RDM", "TARIK_KELAS_RDM")
+    .addItem("Tarik Ajar RDM", "TARIK_AJAR_RDM")
+    .addItem("Tarik Nilai Harian RDM", "TARIK_NILAI_HARIAN_RDM")
+    .addSeparator()
     .addItem("Sync Data Siswa", "syncDataSiswaTotal")
+    .addItem("Sync UID Siswa ESP32", "syncSiswaByUidFirebase")
     .addItem("Sync Data Guru", "syncDataGuruTotal")
     .addItem("Sync Aturan Jam", "uploadAturanJam")
     .addItem("Sync Pengumuman", "syncPengumuman")
@@ -119,6 +128,81 @@ function SETUP_SEKOLAH() {
   );
 
   Logger.log("SETUP_SEKOLAH selesai. FIREBASE_CONFIG_JSON tersimpan. KEY lain diisi manual lewat sheet Pengaturan.");
+}
+
+function SETUP_RDM_SYNC() {
+  var res = CoreSystem.setupPengaturanRdmSync(_sid());
+  var pesan = (res && res.pesan) ? res.pesan : "Setup RDM Sync selesai.";
+  try {
+    SpreadsheetApp.getUi().alert(pesan);
+  } catch (e) {
+    Logger.log(pesan);
+  }
+  return res;
+}
+
+function TARIK_ID_SISWA_RDM() {
+  var res = (typeof CoreSystem.tarikIdSiswaRdm === "function")
+    ? CoreSystem.tarikIdSiswaRdm(_sid())
+    : {
+        status: "error",
+        pesan: "CoreSystem.tarikIdSiswaRdm belum tersedia. Push/update library CoreSystem utama dulu, lalu refresh spreadsheet."
+      };
+  var pesan = (res && res.pesan) ? res.pesan : "Tarik ID Siswa RDM selesai.";
+  try {
+    SpreadsheetApp.getUi().alert(pesan);
+  } catch (e) {
+    Logger.log(pesan);
+  }
+  return res;
+}
+
+function TARIK_ID_GURU_RDM() {
+  var res = (typeof CoreSystem.tarikIdGuruRdm === "function")
+    ? CoreSystem.tarikIdGuruRdm(_sid())
+    : {
+        status: "error",
+        pesan: "CoreSystem.tarikIdGuruRdm belum tersedia. Push/update library CoreSystem utama dulu, lalu refresh spreadsheet."
+      };
+  var pesan = (res && res.pesan) ? res.pesan : "Tarik ID Guru RDM selesai.";
+  try {
+    SpreadsheetApp.getUi().alert(pesan);
+  } catch (e) {
+    Logger.log(pesan);
+  }
+  return res;
+}
+
+function TARIK_MAPEL_RDM() {
+  var res = (typeof CoreSystem.tarikMapelRdm === "function")
+    ? CoreSystem.tarikMapelRdm(_sid())
+    : {
+        status: "error",
+        pesan: "CoreSystem.tarikMapelRdm belum tersedia. Push/update library CoreSystem utama dulu, lalu refresh spreadsheet."
+      };
+  var pesan = (res && res.pesan) ? res.pesan : "Tarik Mapel RDM selesai.";
+  try {
+    SpreadsheetApp.getUi().alert(pesan);
+  } catch (e) {
+    Logger.log(pesan);
+  }
+  return res;
+}
+
+function TARIK_KELAS_RDM() {
+  var res = (typeof CoreSystem.tarikKelasRdm === "function")
+    ? CoreSystem.tarikKelasRdm(_sid())
+    : {
+        status: "error",
+        pesan: "CoreSystem.tarikKelasRdm belum tersedia. Push/update library CoreSystem utama dulu, lalu refresh spreadsheet."
+      };
+  var pesan = (res && res.pesan) ? res.pesan : "Tarik Kelas RDM selesai.";
+  try {
+    SpreadsheetApp.getUi().alert(pesan);
+  } catch (e) {
+    Logger.log(pesan);
+  }
+  return res;
 }
 
 function SYNC_SEMUA_DATA() {
@@ -194,7 +278,11 @@ function getDataDashboardKepala() { return CoreSystem.getDataDashboardKepala(_si
 function jalankanOtomatisAlpha() { return CoreSystem.jalankanOtomatisAlpha(_sid()); }
 
 // B. SYNC DATA (ADMIN)
-function syncDataSiswaTotal() { return CoreSystem.syncDataSiswaTotal(_sid()); }
+function syncDataSiswaTotal() {
+  var res = CoreSystem.syncDataSiswaTotal(_sid());
+  try { syncSiswaByUidFirebase(); } catch (e) { Logger.log("[ESP32] sync siswa_by_uid gagal: " + e); }
+  return res;
+}
 function syncDataGuruTotal() { return CoreSystem.syncDataGuruTotal(_sid()); }
 function uploadAturanJam() { return CoreSystem.uploadAturanJam(_sid()); }
 function syncFirebase() { return CoreSystem.uploadAturanJam(_sid()); } // Alias
@@ -207,6 +295,91 @@ function getSemuaSiswa(mode) {
   if ((mode || "").toString() === "__ALUMNI__") return CoreSystem.getSemuaAlumni(_sid());
   return CoreSystem.getSemuaSiswa(_sid());
 }
+
+function _wrapperFirebaseSettings_() {
+  var url = "";
+  var secret = "";
+
+  try {
+    var cfgRaw = _getPengaturanValue_("FIREBASE_CONFIG_JSON");
+    if (cfgRaw) {
+      var cfg = JSON.parse(cfgRaw);
+      url = (cfg && cfg.databaseURL ? cfg.databaseURL : "").toString().trim();
+    }
+  } catch (e) {}
+
+  url = url || _getPengaturanValue_("FIREBASE_URL");
+  secret = _getPengaturanValue_("FIREBASE_SECRET");
+
+  url = (url || "").toString().trim();
+  secret = (secret || "").toString().trim();
+  if (!url) throw new Error("FIREBASE_URL / databaseURL belum diset di Pengaturan.");
+  if (!secret) throw new Error("FIREBASE_SECRET belum diset di Pengaturan.");
+
+  url = url.replace(/\/+$/, "");
+  if (url.indexOf("https://") !== 0 && url.indexOf("http://") !== 0) {
+    url = "https://" + url;
+  }
+
+  return { url: url, secret: secret };
+}
+
+function _wrapperFirebasePut_(path, payload) {
+  var fb = _wrapperFirebaseSettings_();
+  path = (path || "").toString();
+  if (path.charAt(0) !== "/") path = "/" + path;
+
+  var endpoint = fb.url + path + ".json?auth=" + encodeURIComponent(fb.secret);
+  var resp = UrlFetchApp.fetch(endpoint, {
+    method: "put",
+    contentType: "application/json",
+    payload: JSON.stringify(payload || {}),
+    muteHttpExceptions: true
+  });
+
+  var code = resp.getResponseCode();
+  if (code < 200 || code >= 300) {
+    throw new Error("Firebase PUT " + path + " gagal HTTP " + code + ": " + resp.getContentText());
+  }
+  return code;
+}
+
+function _wrapperNormalizeUid_(uid) {
+  uid = (uid || "").toString().trim().toUpperCase();
+  return uid.replace(/[.#$\/\[\]]/g, "");
+}
+
+function syncSiswaByUidFirebase() {
+  var siswa = getSemuaSiswa();
+  var out = {};
+  var count = 0;
+
+  if (Array.isArray(siswa)) {
+    siswa.forEach(function(s) {
+      s = s || {};
+      var uid = _wrapperNormalizeUid_(s.uid || s.UID || s.rfid || s.kartu);
+      var nama = (s.nama || s.nama_lengkap || s.Nama || "").toString().trim();
+      if (!uid || !nama) return;
+
+      var kelas = (s.kelas || s.Kelas || "").toString().trim();
+      var statusRaw = (s.status || s.Status || s.aktif || "").toString().trim().toLowerCase();
+      var aktif = !(statusRaw === "nonaktif" || statusRaw === "tidak aktif" || statusRaw === "false" || statusRaw === "0");
+
+      out[uid] = {
+        nama: nama,
+        kelas: kelas,
+        aktif: aktif,
+        nis: (s.nis || s.NIS || "").toString().trim()
+      };
+      count++;
+    });
+  }
+
+  _wrapperFirebasePut_("/siswa_by_uid", out);
+  Logger.log("[ESP32] siswa_by_uid synced: " + count);
+  return { status: "sukses", count: count, path: "/siswa_by_uid" };
+}
+
 function getSemuaAlumni() { return CoreSystem.getSemuaAlumni(_sid()); }
 function simpanAlumni(form) { return CoreSystem.simpanAlumni(form, _sid()); }
 function hapusAlumni(nis) { return CoreSystem.hapusAlumni(nis, _sid()); }
@@ -275,8 +448,16 @@ function generateLaporanPerpusPDF(filter) { return CoreSystem.generateLaporanPer
 function kirimPengingatPerpusHariIni() { return CoreSystem.kirimPengingatPerpusHariIni(_sid()); }
 function setupTriggerPengingatPerpusPagi() { return CoreSystem.setupTriggerPengingatPerpusPagi(_sid()); }
 function hapusTriggerPengingatPerpusPagi() { return CoreSystem.hapusTriggerPengingatPerpusPagi(_sid()); }
-function simpanSiswa(f, sid) { return CoreSystem.simpanSiswa(f, sid || _sid()); }
-function hapusSiswa(n, sid) { return CoreSystem.hapusSiswa(n, sid || _sid()); }
+function simpanSiswa(f, sid) {
+  var res = CoreSystem.simpanSiswa(f, sid || _sid());
+  try { syncSiswaByUidFirebase(); } catch (e) { Logger.log("[ESP32] sync siswa_by_uid gagal: " + e); }
+  return res;
+}
+function hapusSiswa(n, sid) {
+  var res = CoreSystem.hapusSiswa(n, sid || _sid());
+  try { syncSiswaByUidFirebase(); } catch (e) { Logger.log("[ESP32] sync siswa_by_uid gagal: " + e); }
+  return res;
+}
 
 // D. CRUD GURU
 function getSemuaGuru() { return CoreSystem.getSemuaGuru(_sid()); }
@@ -352,6 +533,7 @@ function promosikanMassalSPMBKeSiswa(form) { return CoreSystem.promosikanMassalS
 function getMasterSPMBPublic() { return CoreSystem.getMasterSPMBPublic(_sid()); }
 function submitSPMBPublic(form) { return CoreSystem.submitSPMBPublic(form, _sid()); }
 function cekStatusSPMBPublic(form) { return CoreSystem.cekStatusSPMBPublic(form, _sid()); }
+function updateBerkasSPMBPublic(form) { return CoreSystem.updateBerkasSPMBPublic(form, _sid()); }
 
 // F. LAPORAN PDF & JURNAL
 function getDaftarMapel() { return CoreSystem.getDaftarMapel(_sid()); }
@@ -383,6 +565,82 @@ function getJadwalMengajarGuru(n) { return CoreSystem.getJadwalMengajarGuru(n, _
 function getMappingKelasMapel(n) { return CoreSystem.getMappingKelasMapel(n, _sid()); }
 function getDataInputNilai(k, m, o) { return CoreSystem.getDataInputNilai(k, m, o || {}, _sid()); }
 function simpanNilaiSemester(d) { return CoreSystem.simpanNilaiSemester(d, _sid()); }
+function kirimNilaiKeWaliKelas(d) { return CoreSystem.kirimNilaiKeWaliKelas(d, _sid()); }
+function batalKirimNilaiKeWaliKelas(d) { return CoreSystem.batalKirimNilaiKeWaliKelas(d || {}, _sid()); }
+function getPengaturanRdmSync() { return CoreSystem.getPengaturanRdmSync(_sid()); }
+function simpanPengaturanRdmSync(form) { return CoreSystem.simpanPengaturanRdmSync(form || {}, _sid()); }
+function syncNilaiHarianKeRdm(form) { return CoreSystem.syncNilaiHarianKeRdm(form || {}, _sid()); }
+function syncCatatanWaliKeRdm(form) { return CoreSystem.syncCatatanWaliKeRdm(form || {}, _sid()); }
+function syncRekapAbsensiKeRdm(form) { return CoreSystem.syncRekapAbsensiKeRdm(form || {}, _sid()); }
+function inspectRdmLock(form) { return CoreSystem.inspectRdmLock(form || {}, _sid()); }
+function syncKirimNilaiGuruRdm(form) { return CoreSystem.syncKirimNilaiGuruRdm(form || {}, _sid()); }
+function syncKunciNilaiKelasRdm(form) { return CoreSystem.syncKunciNilaiKelasRdm(form || {}, _sid()); }
+function tarikIdSiswaRdm() {
+  if (typeof CoreSystem.tarikIdSiswaRdm !== "function") {
+    return {
+      status: "error",
+      pesan: "CoreSystem.tarikIdSiswaRdm belum tersedia. Push/update library CoreSystem utama dulu, lalu refresh spreadsheet."
+    };
+  }
+  return CoreSystem.tarikIdSiswaRdm(_sid());
+}
+function tarikIdGuruRdm() {
+  if (typeof CoreSystem.tarikIdGuruRdm !== "function") {
+    return {
+      status: "error",
+      pesan: "CoreSystem.tarikIdGuruRdm belum tersedia. Push/update library CoreSystem utama dulu, lalu refresh spreadsheet."
+    };
+  }
+  return CoreSystem.tarikIdGuruRdm(_sid());
+}
+function tarikMapelRdm() {
+  if (typeof CoreSystem.tarikMapelRdm !== "function") {
+    return {
+      status: "error",
+      pesan: "CoreSystem.tarikMapelRdm belum tersedia. Push/update library CoreSystem utama dulu, lalu refresh spreadsheet."
+    };
+  }
+  return CoreSystem.tarikMapelRdm(_sid());
+}
+function tarikIdKelasRdm() {
+  if (typeof CoreSystem.tarikIdKelasRdm !== "function") {
+    return {
+      status: "error",
+      pesan: "CoreSystem.tarikIdKelasRdm belum tersedia. Push/update library CoreSystem utama dulu, lalu refresh spreadsheet."
+    };
+  }
+  return CoreSystem.tarikIdKelasRdm(_sid());
+}
+function tarikAjarRdm() {
+  if (typeof CoreSystem.tarikAjarRdm !== "function") {
+    return {
+      status: "error",
+      pesan: "CoreSystem.tarikAjarRdm belum tersedia. Push/update library CoreSystem utama dulu, lalu refresh spreadsheet."
+    };
+  }
+  return CoreSystem.tarikAjarRdm(_sid());
+}
+function tarikNilaiHarianRdm(filter) {
+  if (typeof CoreSystem.tarikNilaiHarianRdm !== "function") {
+    return {
+      status: "error",
+      pesan: "CoreSystem.tarikNilaiHarianRdm belum tersedia. Push/update library CoreSystem utama dulu, lalu refresh spreadsheet."
+    };
+  }
+  return CoreSystem.tarikNilaiHarianRdm(_sid(), filter || {});
+}
+function TARIK_AJAR_RDM() {
+  var res = tarikAjarRdm();
+  var pesan = (res && res.pesan) ? res.pesan : "Tarik Ajar RDM selesai.";
+  try { SpreadsheetApp.getUi().alert(pesan); } catch (e) { Logger.log(pesan); }
+  return res;
+}
+function TARIK_NILAI_HARIAN_RDM() {
+  var res = tarikNilaiHarianRdm({});
+  var pesan = (res && res.pesan) ? res.pesan : "Tarik Nilai Harian RDM selesai.";
+  try { SpreadsheetApp.getUi().alert(pesan); } catch (e) { Logger.log(pesan); }
+  return res;
+}
 function getTopikNilaiMapel(k, m, o) { return CoreSystem.getTopikNilaiMapel(k, m, o || {}, _sid()); }
 function simpanTopikNilaiMapel(form) { return CoreSystem.simpanTopikNilaiMapel(form, _sid()); }
 function salinTopikNilaiMapelSemesterSebelumnya(form) { return CoreSystem.salinTopikNilaiMapelSemesterSebelumnya(form, _sid()); }
@@ -953,6 +1211,14 @@ function getPengaturanDendaDhuha() { return CoreSystem.getPengaturanDendaDhuha(_
 function simpanPengaturanDendaDhuha(form) { return CoreSystem.simpanPengaturanDendaDhuha(form, _sid()); }
 function getPengaturanAbsenDhuha() { return CoreSystem.getPengaturanAbsenDhuha(_sid()); }
 function simpanPengaturanAbsenDhuha(form) { return CoreSystem.simpanPengaturanAbsenDhuha(form, _sid()); }
+
+// ESP32 Management
+function getDaftarESP32() { return CoreSystem.getDaftarESP32(_sid()); }
+function getStatusESP32(deviceId) { return CoreSystem.getStatusESP32(deviceId, _sid()); }
+function simpanKonfigurasiESP32(deviceId, form) { return CoreSystem.simpanKonfigurasiESP32(deviceId, form, _sid()); }
+function hapusESP32(deviceId) { return CoreSystem.hapusESP32(deviceId, _sid()); }
+function autoDeteksiESP32() { return CoreSystem.autoDeteksiESP32(_sid()); }
+
 function getPengaturanFiturDhuhaGuru() { return CoreSystem.getPengaturanFiturDhuhaGuru(_sid()); }
 function simpanPengaturanFiturDhuhaGuru(form) { return CoreSystem.simpanPengaturanFiturDhuhaGuru(form, _sid()); }
 function getPengaturanLabelDhuhaGuru() { return CoreSystem.getPengaturanLabelDhuhaGuru(_sid()); }
@@ -966,6 +1232,7 @@ function bayarHonorPembinaEkskul(id, form) { return CoreSystem.bayarHonorPembina
 function generateRekapGajiGuru(filter) { return CoreSystem.generateRekapGajiGuru(filter, _sid()); }
 function getRekapGajiGuru(filter) { return CoreSystem.getRekapGajiGuru(filter, _sid()); }
 function generateSlipGajiGuruPDF(filter) { return CoreSystem.generateSlipGajiGuruPDF(filter, _sid()); }
+function generateRekapSesiNgajarKelasExcel(filter) { return CoreSystem.generateRekapSesiNgajarKelasExcel(filter, _sid()); }
 function generateSuratAktifSiswaPDF(nis) { return CoreSystem.generateSuratAktifSiswaPDF(nis, _sid()); }
 function bayarGajiGuru(id, form) { return CoreSystem.bayarGajiGuru(id, form, _sid()); }
 function bayarSemuaGajiGuru(filter, form) { return CoreSystem.bayarSemuaGajiGuru(filter, form, _sid()); }
