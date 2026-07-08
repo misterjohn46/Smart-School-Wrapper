@@ -38,19 +38,13 @@ Copy seluruh isi dari [Kode.js](Kode.js) ke file `Code.gs` di Apps Script.
 
 ### 5. Atur OAuth Scopes
 
-Buka **Project Settings ▶ Show "appsscript.json" manifest** dan pastikan scopes ini ada:
+Copy template dari **[appsscript.example.json](appsscript.example.json)** ke **appsscript.json** Anda:
 
-```json
-{
-  "oauthScopes": [
-    "https://www.googleapis.com/auth/script.external_request",
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive",
-    "https://www.googleapis.com/auth/script.scriptapp",
-    "https://www.googleapis.com/auth/userinfo.email"
-  ]
-}
-```
+1. Buka **Project Settings ▶ Show "appsscript.json" manifest**
+2. Copy isi dari `appsscript.example.json`
+3. **Ganti `libraryId`** dengan Script ID CoreSystem yang diberikan admin
+4. Save
+
 
 ### 6. Deploy Web App (untuk API endpoints)
 
@@ -197,7 +191,11 @@ Jika library CoreSystem di-update (biasanya diinformasikan oleh admin Smart Scho
 
 ```
 Smart-School-Wrapper/
-├── Kode.js          # Bridge utama (satu-satunya file yang dibutuhkan)
-└── README.md        # Dokumentasi ini
+├── Kode.js                    # Bridge utama
+├── appsscript.example.json    # Template manifest (ganti libraryId!)
+├── update.html                # Web-based updater
+├── .gitignore                 # Ignore: appsscript.json, .clasp.json
+└── README.md                  # Dokumentasi ini
 ```
+
 
