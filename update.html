@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart School — Wrapper Updater</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    :root {
+      --bg: #f0f2f5;
+      --card: #ffffff;
+      --primary: #1a73e8;
+      --primary-hover: #1557b0;
+      --danger: #d93025;
+      --success: #0f9d58;
+      --text: #202124;
+      --text-secondary: #5f6368;
+      --border: #dadce0;
+      --shadow: 0 1px 3px rgba(0,0,0,.12), 0 1px 2px rgba(0,0,0,.08);
+      --shadow-lg: 0 4px 6px rgba(0,0,0,.12), 0 2px 4px rgba(0,0,0,.08);
+      --radius: 8px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      width: 100%;
+      max-width: 520px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .header h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .header .subtitle {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* Card */
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 28px;
+      margin-bottom: 16px;
+    }
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* Form */
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+    input[type="text"]:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(26,115,232,.15);
+    }
+    .helper {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+      width: 100%;
+    }
+    .btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-hover);
+      box-shadow: var(--shadow-lg);
+    }
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+    .btn-success:hover:not(:disabled) {
+      filter: brightness(1.1);
+    }
+    .btn-outline {
+      background: white;
+      border: 1.5px solid var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover:not(:disabled) {
+      background: #f8f9fa;
+    }
+    .btn-google {
+      background: white;
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .btn-google:hover:not(:disabled) {
+      background: #f8f9fa;
+      box-shadow: var(--shadow);
+    }
+    .btn-google.connected {
+      border-color: var(--success);
+      color: var(--success);
+      background: #e8f5e9;
+      cursor: default;
+    }
+
+    /* Status */
+    .status {
+      margin-top: 12px;
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      font-size: 0.85rem;
+      display: none;
+    }
+    .status.info {
+      display: block;
+      background: #e8f0fe;
+      color: #1967d2;
+      border: 1px solid #d2e3fc;
+    }
+    .status.success {
+      display: block;
+      background: #e6f4ea;
+      color: #137333;
+      border: 1px solid #ceead6;
+    }
+    .status.error {
+      display: block;
+      background: #fce8e6;
+      color: #c5221f;
+      border: 1px solid #f5c6cb;
+    }
+
+    /* Log */
+    .log {
+      margin-top: 12px;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.78rem;
+      max-height: 200px;
+      overflow-y: auto;
+      display: none;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+    .log.visible { display: block; }
+    .log .dim { color: #808080; }
+    .log .green { color: #4ec9b0; }
+    .log .yellow { color: #dcdcaa; }
+    .log .red { color: #f14c4c; }
+
+    /* Steps */
+    .steps { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+    }
+    .step .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+    .step.done .dot { background: var(--success); }
+    .step.active .dot {
+      background: var(--primary);
+      animation: pulse 1.2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .3; }
+    }
+
+    /* API key section */
+    .api-section {
+      margin-top: 16px;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      display: none;
+    }
+    .api-section.visible { display: block; }
+    .toggle-link {
+      font-size: 0.8rem;
+      color: var(--primary);
+      cursor: pointer;
+      text-decoration: none;
+      margin-top: 8px;
+      display: inline-block;
+    }
+    .toggle-link:hover { text-decoration: underline; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      border-radius: var(--radius);
+      color: white;
+      font-weight: 600;
+      font-size: 0.85rem;
+      box-shadow: var(--shadow-lg);
+      z-index: 999;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: all .3s ease;
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--danger); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📦 Wrapper Updater</h1>
+      <p class="subtitle">Push Kode.js ke Apps Script project Anda</p>
+    </div>
+
+    <!-- Step 1: Script ID -->
+    <div class="card">
+      <h2><span class="step-num">1</span> Masukkan Script ID</h2>
+      <label for="scriptId">Apps Script ID</label>
+      <input type="text" id="scriptId" placeholder="contoh: 1AbCdEfGhIjKlMnOpQrStUvWxYz-0123456789"
+             autocomplete="off" spellcheck="false">
+      <p class="helper">Bisa ditemukan di Apps Script → Project Settings → IDs → Script ID</p>
+    </div>
+
+    <!-- Step 2: Connect Google -->
+    <div class="card">
+      <h2><span class="step-num">2</span> Hubungkan Akun Google</h2>
+      <button class="btn btn-google" id="btnConnect" onclick="handleAuthClick()">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Connect Google Account
+      </button>
+      <div id="connectedName" style="margin-top:8px;font-size:0.85rem;color:var(--success);display:none;"></div>
+    </div>
+
+    <!-- Step 3: Push -->
+    <div class="card">
+      <h2><span class="step-num">3</span> Push ke Apps Script</h2>
+      <div class="steps">
+        <div class="step" id="step-fetch"><span class="dot"></span> Fetch Kode.js dari GitHub</div>
+        <div class="step" id="step-push"><span class="dot"></span> Push ke project Apps Script</div>
+        <div class="step" id="step-done"><span class="dot"></span> Selesai</div>
+      </div>
+      <button class="btn btn-primary" id="btnPush" onclick="doPush()" disabled style="margin-top:16px;">
+        🚀 Push Kode.js
+      </button>
+      <div class="status" id="statusMsg"></div>
+      <div class="log" id="logPanel"></div>
+    </div>
+
+    <!-- Advanced -->
+    <div style="text-align:center;">
+      <span class="toggle-link" onclick="toggleAdvanced()">⚙️ Advanced: API Key manual</span>
+    </div>
+    <div class="api-section" id="apiSection">
+      <label for="apiKey">Google API Key (opsional)</label>
+      <input type="text" id="apiKey" placeholder="AIza...">
+      <p class="helper">Digunakan jika OAuth gagal. Butuh API key dengan Apps Script API enabled.</p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ========== CONFIG ==========
+    const GITHUB_RAW = 'https://raw.githubusercontent.com/misterjohn46/Smart-School-Wrapper/main/Kode.js';
+    const APPS_SCRIPT_API = 'https://script.googleapis.com/v1/projects';
+    const SCOPES = ['https://www.googleapis.com/auth/script.projects'];
+
+    // ========== STATE ==========
+    let accessToken = null;
+    let tokenClient = null;
+    let userEmail = null;
+
+    // ========== DOM REFS ==========
+    const $ = id => document.getElementById(id);
+    const btnConnect = $('btnConnect');
+    const btnPush = $('btnPush');
+    const scriptIdInput = $('scriptId');
+    const statusMsg = $('statusMsg');
+    const logPanel = $('logPanel');
+    const toast = $('toast');
+
+    // ========== INIT ==========
+    window.onload = () => {
+      // Load saved
+      const saved = localStorage.getItem('ss_wrapper_script_id');
+      if (saved) scriptIdInput.value = saved;
+
+      const savedToken = localStorage.getItem('ss_wrapper_token');
+      const savedEmail = localStorage.getItem('ss_wrapper_email');
+      const tokenExpiry = localStorage.getItem('ss_wrapper_token_expiry');
+
+      if (savedToken && tokenExpiry && Date.now() < parseInt(tokenExpiry)) {
+        accessToken = savedToken;
+        userEmail = savedEmail;
+        updateConnectUI(true);
+      }
+
+      // Enable push if both scriptId and token exist
+      updatePushButton();
+
+      scriptIdInput.addEventListener('input', () => {
+        localStorage.setItem('ss_wrapper_script_id', scriptIdInput.value.trim());
+        updatePushButton();
+      });
+
+      // Init Google Identity Services
+      initGIS();
+    };
+
+    function initGIS() {
+      // We use a simple approach: redirect-based OAuth using popup
+      // The Google Identity Services token model
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: '739595829122-lqnfqngp03hjjs0qo3h7j0g8q6qvqlu7.apps.googleusercontent.com',
+        scope: SCOPES.join(' '),
+        callback: handleTokenResponse,
+        error_callback: handleTokenError,
+      });
+    }
+
+    function handleAuthClick() {
+      if (accessToken && userEmail) {
+        // Already connected — disconnect
+        if (confirm('Putuskan koneksi Google?')) {
+          disconnect();
+        }
+        return;
+      }
+      tokenClient.requestAccessToken({ prompt: 'consent' });
+    }
+
+    function handleTokenResponse(response) {
+      if (response.error) {
+        handleTokenError(response);
+        return;
+      }
+      accessToken = response.access_token;
+      const expiresIn = (response.expires_in || 3600) * 1000;
+      const expiry = Date.now() + expiresIn - 60000; // 1 min buffer
+
+      localStorage.setItem('ss_wrapper_token', accessToken);
+      localStorage.setItem('ss_wrapper_token_expiry', expiry.toString());
+
+      // Fetch user info
+      fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      })
+        .then(r => r.json())
+        .then(data => {
+          userEmail = data.email || 'Connected';
+          localStorage.setItem('ss_wrapper_email', userEmail);
+          updateConnectUI(true);
+          updatePushButton();
+          showToast('✅ Terhubung sebagai ' + userEmail, 'success');
+        })
+        .catch(() => {
+          userEmail = 'Connected';
+          updateConnectUI(true);
+          updatePushButton();
+          showToast('✅ Terhubung', 'success');
+        });
+    }
+
+    function handleTokenError(err) {
+      console.error('OAuth error:', err);
+      showToast('❌ Gagal login. Coba lagi.', 'error');
+      log('red', 'OAuth Error: ' + JSON.stringify(err));
+    }
+
+    function disconnect() {
+      // Revoke token
+      if (accessToken) {
+        google.accounts.oauth2.revoke(accessToken, () => {});
+      }
+      accessToken = null;
+      userEmail = null;
+      localStorage.removeItem('ss_wrapper_token');
+      localStorage.removeItem('ss_wrapper_email');
+      localStorage.removeItem('ss_wrapper_token_expiry');
+      updateConnectUI(false);
+      updatePushButton();
+      showToast('Terputus. Silakan connect ulang.', 'error');
+    }
+
+    function updateConnectUI(connected) {
+      if (connected) {
+        btnConnect.innerHTML = `
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#0f9d58" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+          Connected: ${userEmail || 'Google Account'}
+        `;
+        btnConnect.classList.add('connected');
+      } else {
+        btnConnect.innerHTML = `
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Connect Google Account
+        `;
+        btnConnect.classList.remove('connected');
+      }
+    }
+
+    function updatePushButton() {
+      const scriptId = scriptIdInput.value.trim();
+      btnPush.disabled = !(scriptId && accessToken);
+    }
+
+    // ========== PUSH LOGIC ==========
+    async function doPush() {
+      const scriptId = scriptIdInput.value.trim();
+      if (!scriptId) {
+        showStatus('error', 'Masukkan Script ID terlebih dahulu.');
+        return;
+      }
+      if (!accessToken) {
+        showStatus('error', 'Hubungkan akun Google terlebih dahulu (Step 2).');
+        return;
+      }
+
+      // Reset UI
+      resetSteps();
+      clearStatus();
+      clearLog();
+      btnPush.disabled = true;
+      btnPush.textContent = '⏳ Processing...';
+
+      try {
+        // Step 1: Fetch from GitHub
+        setStepActive('step-fetch');
+        log('dim', '⬇️  Fetching Kode.js dari GitHub...');
+        const response = await fetch(GITHUB_RAW, { cache: 'no-store' });
+        if (!response.ok) throw new Error(`HTTP ${response.status}: Gagal fetch Kode.js dari GitHub`);
+        const kodeContent = await response.text();
+        log('green', `✅ Berhasil fetch Kode.js (${kodeContent.length.toLocaleString()} karakter)`);
+        setStepDone('step-fetch');
+
+        // Step 2: Push to Apps Script
+        setStepActive('step-push');
+        log('dim', `📤  Push ke project: ${scriptId}...`);
+
+        const apiUrl = `${APPS_SCRIPT_API}/${scriptId}/content`;
+        const body = JSON.stringify({
+          scriptId: scriptId,
+          files: [
+            {
+              name: 'Code',
+              type: 'SERVER_JS',
+              source: kodeContent
+            }
+          ]
+        });
+
+        const pushResponse = await fetch(apiUrl, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: body
+        });
+
+        if (!pushResponse.ok) {
+          const errData = await pushResponse.json().catch(() => ({}));
+          const errMsg = errData.error?.message || `HTTP ${pushResponse.status}`;
+          
+          if (pushResponse.status === 403) {
+            throw new Error(`Permission denied (403). Pastikan:\n• Akun Anda adalah editor/pemilik project\n• Atau Anda menggunakan API Key yang tepat`);
+          }
+          if (pushResponse.status === 404) {
+            throw new Error(`Project tidak ditemukan (404). Cek kembali Script ID.`);
+          }
+          throw new Error(errMsg);
+        }
+
+        const result = await pushResponse.json();
+        log('green', `✅ Berhasil push ke Apps Script project!`);
+        setStepDone('step-push');
+        setStepDone('step-done');
+
+        showStatus('success', `🎉 Sukses! Kode.js telah dipush ke project <strong>${scriptId}</strong>. Refresh editor Apps Script Anda untuk melihat perubahan.`);
+        showToast('✅ Kode.js berhasil dipush!', 'success');
+
+      } catch (err) {
+        log('red', `❌ Error: ${err.message}`);
+        showStatus('error', `❌ Gagal: ${err.message.replace(/\n/g, '<br>')}`);
+        showToast('❌ Push gagal. Lihat log.', 'error');
+      } finally {
+        btnPush.disabled = false;
+        btnPush.textContent = '🚀 Push Kode.js';
+      }
+    }
+
+    // ========== UI HELPERS ==========
+    function setStepActive(id) {
+      const el = $(id);
+      el.className = 'step active';
+    }
+    function setStepDone(id) {
+      const el = $(id);
+      el.className = 'step done';
+    }
+    function resetSteps() {
+      ['step-fetch', 'step-push', 'step-done'].forEach(id => {
+        $(id).className = 'step';
+      });
+    }
+    function showStatus(type, msg) {
+      statusMsg.className = 'status ' + type;
+      statusMsg.innerHTML = msg;
+    }
+    function clearStatus() {
+      statusMsg.className = 'status';
+      statusMsg.innerHTML = '';
+    }
+    function log(cls, msg) {
+      logPanel.classList.add('visible');
+      const span = `<span class="${cls}">${msg}</span>`;
+      logPanel.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${span}</div>`;
+      logPanel.scrollTop = logPanel.scrollHeight;
+    }
+    function clearLog() {
+      logPanel.innerHTML = '';
+      logPanel.classList.remove('visible');
+    }
+    function showToast(msg, type) {
+      toast.textContent = msg;
+      toast.className = 'toast ' + type + ' show';
+      clearTimeout(toast._timeout);
+      toast._timeout = setTimeout(() => {
+        toast.className = 'toast';
+      }, 3000);
+    }
+
+    function toggleAdvanced() {
+      $('apiSection').classList.toggle('visible');
+    }
+  </script>
+</body>
+</html>
