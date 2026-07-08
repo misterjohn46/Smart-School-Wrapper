@@ -78,7 +78,30 @@ Template WA bisa ditambahkan di sini (KEY: `WA_TEMPLATE_MASUK`, `WA_TEMPLATE_PUL
 
 Saat ada update terbaru dari repository ini:
 
-### Metode 1: Copy Manual (Rekomended)
+### Metode 1: Auto-Update (Rekomended) ⚡
+
+Cukup jalankan fungsi dari Apps Script editor:
+
+1. Buka Apps Script editor dari spreadsheet Anda (**Extensions ▶ Apps Script**)
+2. Pilih fungsi `updateWrapper` dari dropdown
+3. Klik **Run** ▶ beri izin jika diminta
+4. Tunggu sampai log muncul `✅ updateWrapper BERHASIL!`
+5. **Refresh** editor untuk melihat kode terbaru
+6. **Deploy ulang** Web App: **Deploy ▶ Manage deployments ▶ Edit ▶ Version ▶ New version ▶ Deploy**
+
+> **Catatan:** Pastikan `appsscript.json` sudah memiliki scope `script.projects`. Jika belum, update manual terlebih dahulu (Metode 2).
+
+### Cek Versi
+
+Untuk membandingkan versi lokal vs GitHub:
+
+1. Pilih fungsi `checkWrapperVersion`
+2. Klik **Run**
+3. Lihat **View ▶ Logs**. Jika berbeda >5 baris, jalankan `updateWrapper()`.
+
+### Metode 2: Copy Manual
+
+Gunakan jika auto-update gagal:
 
 1. Buka file [Kode.js](Kode.js) di repo ini
 2. Klik **Raw** (atau copy seluruh isi)
@@ -86,7 +109,6 @@ Saat ada update terbaru dari repository ini:
 4. **Hapus seluruh isi** `Code.gs` yang lama
 5. **Paste** kode baru
 6. Klik **Save** (💾)
-7. **Deploy ulang** Web App jika ada perubahan: **Deploy ▶ Manage deployments ▶ Edit ▶ Version ▶ New version ▶ Deploy**
 
 ### Metode 2: Via clasp (untuk developer)
 

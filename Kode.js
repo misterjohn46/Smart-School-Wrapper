@@ -1346,3 +1346,116 @@ function getPelanggaranPortalOrtu(noOrtu, nis, spreadsheetId) {
 function getKeuanganPortalOrtu(noOrtu, nis, periode, spreadsheetId) {
   return CoreSystem.getKeuanganPortalOrtu(noOrtu, nis, periode || "", spreadsheetId || _sid());
 }
+
+// ==================================================
+//   AUTO-UPDATE WRAPPER
+//   Fetch Kode.js terbaru dari GitHub & update script ini
+// ==================================================
+
+/**
+ * Update wrapper ke versi terbaru dari GitHub.
+ * Jalankan fungsi ini dari Apps Script editor (Run > updateWrapper).
+ */
+function updateWrapper() {
+  var GITHUB_RAW = "https://raw.githubusercontent.com/misterjohn46/Smart-School-Wrapper/main/Kode.js";
+  var scriptId = ScriptApp.getScriptId();
+  
+  try {
+    // 1. Fetch kode terbaru
+    var response = UrlFetchApp.fetch(GITHUB_RAW, { muteHttpExceptions: true });
+    if (response.getResponseCode() !== 200) {
+      throw new Error("Gagal fetch Kode.js: HTTP " + response.getResponseCode());
+    }
+    var newContent = response.getContentText();
+    
+    // 2. Ambil daftar file yang ada di project ini
+    var url = "https://script.googleapis.com/v1/projects/" + scriptId + "/content";
+    var token = ScriptApp.getOAuthToken();
+    
+    var currentFiles = JSON.parse(UrlFetchApp.fetch(url, {
+      headers: { Authorization: "Bearer " + token },
+      muteHttpExceptions: true
+    }).getContentText());
+    
+    // 3. Cari file Code.gs (atau Kode.gs)
+    var sourceFileName = null;
+    (currentFiles.files || []).forEach(function(f) {
+      if (f.name && (f.name === "Code" || f.name.toLowerCase().indexOf("kode") !== -1)) {
+        sourceFileName = f.name;
+      }
+    });
+    if (!sourceFileName) sourceFileName = "Code";
+    
+    // 4. Update file via Apps Script API
+    var updateUrl = "https://script.googleapis.com/v1/projects/" + scriptId + "/content";
+    var payload = {
+      files: [{
+        name: sourceFileName,
+        type: "SERVER_JS",
+        source: newContent
+      }]
+    };
+    
+    var result = UrlFetchApp.fetch(updateUrl, {
+      method: "put",
+      contentType: "application/json",
+      headers: { Authorization: "Bearer " + token },
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true
+    });
+    
+    if (result.getResponseCode() === 200) {
+      Logger.log("✅ updateWrapper BERHASIL! Kode.js telah diupdate ke versi terbaru.");
+      Logger.log("File yang diupdate: " + sourceFileName);
+      Logger.log("Restart / refresh Apps Script editor untuk melihat perubahan.");
+    } else {
+      Logger.log("❌ Gagal update: " + result.getContentText());
+    }
+    
+  } catch (e) {
+    Logger.log("❌ Error updateWrapper: " + e.toString());
+    Logger.log("Pastikan scope script.projects sudah diaktifkan di appsscript.json");
+  }
+}
+
+/**
+ * Cek versi wrapper saat ini vs yang tersedia di GitHub.
+ * Hanya logging perbandingan, tidak mengubah apa pun.
+ */
+function checkWrapperVersion() {
+  var GITHUB_RAW = "https://raw.githubusercontent.com/misterjohn46/Smart-School-Wrapper/main/Kode.js";
+  
+  try {
+    var response = UrlFetchApp.fetch(GITHUB_RAW, { muteHttpExceptions: true });
+    if (response.getResponseCode() === 200) {
+      var remoteContent = response.getContentText();
+      var remoteLines = remoteContent.split("\n").length;
+      
+      // Ambil versi lokal
+      var scriptId = ScriptApp.getScriptId();
+      var token = ScriptApp.getOAuthToken();
+      var url = "https://script.googleapis.com/v1/projects/" + scriptId + "/content";
+      var currentFiles = JSON.parse(UrlFetchApp.fetch(url, {
+        headers: { Authorization: "Bearer " + token },
+        muteHttpExceptions: true
+      }).getContentText());
+      
+      var localLines = 0;
+      (currentFiles.files || []).forEach(function(f) {
+        if (f.source) localLines += f.source.split("\n").length;
+      });
+      
+      Logger.log("📊 Perbandingan Wrapper:");
+      Logger.log("  Lokal: ~" + localLines + " baris");
+      Logger.log("  Remote (GitHub): ~" + remoteLines + " baris");
+      
+      if (Math.abs(localLines - remoteLines) > 5) {
+        Logger.log("  ⚠️ Versi berbeda! Jalankan updateWrapper() untuk update.");
+      } else {
+        Logger.log("  ✅ Wrapper sudah up-to-date.");
+      }
+    }
+  } catch (e) {
+    Logger.log("❌ Gagal cek versi: " + e.toString());
+  }
+}
