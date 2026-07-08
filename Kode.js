@@ -1407,15 +1407,33 @@ function updateWrapper() {
     if (result.getResponseCode() === 200) {
       Logger.log("✅ updateWrapper BERHASIL! Kode.js telah diupdate ke versi terbaru.");
       Logger.log("File yang diupdate: " + sourceFileName);
-      Logger.log("Restart / refresh Apps Script editor untuk melihat perubahan.");
+      Logger.log("Refresh Apps Script editor (F5) untuk melihat perubahan.");
+      Logger.log("Jangan lupa deploy ulang Web App: Deploy > Manage deployments > Edit > New version > Deploy");
     } else {
-      Logger.log("❌ Gagal update: " + result.getContentText());
+      var errData = JSON.parse(result.getContentText());
+      var errMsg = errData.error && errData.error.message ? errData.error.message : result.getContentText();
+      
+      // Cek apakah error karena Apps Script API belum di-enable
+      if (errMsg.indexOf("Apps Script API has not been used") !== -1 || errMsg.indexOf("SERVICE_DISABLED") !== -1) {
+        var activationUrl = "https://console.developers.google.com/apis/api/script.googleapis.com/overview?project=" + scriptId;
+        Logger.log("❌ Apps Script API belum diaktifkan di project ini.");
+        Logger.log("   Buka URL ini untuk mengaktifkannya:");
+        Logger.log("   " + activationUrl);
+        Logger.log("   Setelah diaktifkan, tunggu 1-2 menit lalu jalankan updateWrapper() lagi.");
+        Logger.log("   ⚡ Atau gunakan Web Updater: https://misterjohn46.github.io/Smart-School-Wrapper/update.html");
+      } else {
+        Logger.log("❌ Gagal update: " + errMsg);
+      }
     }
     
   } catch (e) {
     Logger.log("❌ Error updateWrapper: " + e.toString());
-    Logger.log("Pastikan scope script.projects sudah diaktifkan di appsscript.json");
+    Logger.log("Kemungkinan penyebab:");
+    Logger.log("  1. Scope script.projects belum ada di appsscript.json");
+    Logger.log("  2. Apps Script API belum diaktifkan - buka https://console.developers.google.com/apis/api/script.googleapis.com/overview?project=" + ScriptApp.getScriptId());
+    Logger.log("  ⚡ Atau gunakan Web Updater: https://misterjohn46.github.io/Smart-School-Wrapper/update.html");
   }
+
 }
 
 /**

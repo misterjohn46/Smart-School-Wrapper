@@ -110,7 +110,11 @@ Jalankan fungsi update langsung dari dalam Apps Script editor:
    - Pilih **Version → New version**
    - Klik **Deploy**
 
-> **Catatan:** Jika gagal dengan error scope, berarti `appsscript.json` belum punya scope `script.projects`. Gunakan Metode 1 (Web Updater) atau Metode 3 (Manual).
+> **Prasyarat:**
+> 1. `appsscript.json` harus punya scope `https://www.googleapis.com/auth/script.projects` (sudah otomatis jika menggunakan `appsscript.json` dari repo ini).
+> 2. **Apps Script API harus diaktifkan di GCP project.** Jika error "Apps Script API has not been used", buka URL yang muncul di log → klik **Enable** → tunggu 1-2 menit → coba lagi.
+> 3. Jika tetap gagal, gunakan **Metode 1 (Web Updater)** — tidak perlu enable API manual.
+
 
 #### Cek Versi Dulu
 
