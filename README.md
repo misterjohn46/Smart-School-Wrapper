@@ -30,7 +30,7 @@ Copy seluruh isi dari [Kode.js](Kode.js) ke file `Code.gs` di Apps Script.
 ### 4. Tambahkan Library CoreSystem
 
 1. Di Apps Script editor, klik **+** di samping **Libraries**
-2. Masukkan Script ID: `1TEjwz_Jrr16mgSpNmjTs8uZuREWC_MNSk_x2a9odI3DThUJy09easBiU`
+2. Masukkan Script ID CoreSystem (didapat dari administrator Smart School)
 3. Klik **Look up**
 4. Pilih versi terbaru (atau `0` untuk development)
 5. Ganti **Identifier** menjadi `CoreSystem`
