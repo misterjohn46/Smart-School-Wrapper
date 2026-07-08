@@ -74,68 +74,102 @@ Template WA bisa ditambahkan di sini (KEY: `WA_TEMPLATE_MASUK`, `WA_TEMPLATE_PUL
 
 ---
 
-## Cara Update Wrapper
+## Cara Update Wrapper (Untuk Klien)
 
-Saat ada update terbaru dari repository ini:
+Saat ada update terbaru, klien bisa meng-update script mereka dengan 3 cara. Pilih yang paling mudah:
 
-### Metode 1: Auto-Update (Rekomended) ⚡
+---
 
-Cukup jalankan fungsi dari Apps Script editor:
+### ⭐ Metode 1: Web Updater (Paling Mudah — untuk non-teknisi)
 
-1. Buka Apps Script editor dari spreadsheet Anda (**Extensions ▶ Apps Script**)
-2. Pilih fungsi `updateWrapper` dari dropdown
-3. Klik **Run** ▶ beri izin jika diminta
+Gunakan halaman web updater. Tidak perlu buka Apps Script editor!
+
+1. Buka **[update.html](https://misterjohn46.github.io/Smart-School-Wrapper/update.html)** di browser
+2. Masukkan **Script ID** project Apps Script Anda
+   > Cara dapat Script ID: buka Apps Script → **Project Settings** → scroll ke **IDs** → copy **Script ID**
+3. Klik **Connect Google Account** → login dengan akun Google yang punya akses ke Apps Script
+4. Klik **🚀 Push Kode.js**
+5. **Selesai!** Refresh editor Apps Script untuk melihat kode terbaru.
+
+> **Keuntungan:** Tidak perlu copy-paste, tidak perlu buka editor. Cukup 3 klik.
+
+---
+
+### ⚡ Metode 2: Auto-Update dari Apps Script
+
+Jalankan fungsi update langsung dari dalam Apps Script editor:
+
+1. Buka spreadsheet Anda → **Extensions ▶ Apps Script**
+2. Dari dropdown fungsi (dekat tombol Run), pilih **`updateWrapper`**
+3. Klik **Run** → beri izin jika diminta saat popup muncul
 4. Tunggu sampai log muncul `✅ updateWrapper BERHASIL!`
-5. **Refresh** editor untuk melihat kode terbaru
-6. **Deploy ulang** Web App: **Deploy ▶ Manage deployments ▶ Edit ▶ Version ▶ New version ▶ Deploy**
+5. **Refresh** halaman editor (F5) untuk melihat kode terbaru
+6. **PENTING:** Deploy ulang Web App:
+   - **Deploy ▶ Manage deployments**
+   - Klik ikon ✏️ (edit) pada deployment aktif
+   - Pilih **Version → New version**
+   - Klik **Deploy**
 
-> **Catatan:** Pastikan `appsscript.json` sudah memiliki scope `script.projects`. Jika belum, update manual terlebih dahulu (Metode 2).
+> **Catatan:** Jika gagal dengan error scope, berarti `appsscript.json` belum punya scope `script.projects`. Gunakan Metode 1 (Web Updater) atau Metode 3 (Manual).
 
-### Cek Versi
+#### Cek Versi Dulu
 
-Untuk membandingkan versi lokal vs GitHub:
+Sebelum update, cek apakah wrapper Anda sudah versi terbaru:
 
-1. Pilih fungsi `checkWrapperVersion`
+1. Pilih fungsi **`checkWrapperVersion`** dari dropdown
 2. Klik **Run**
-3. Lihat **View ▶ Logs**. Jika berbeda >5 baris, jalankan `updateWrapper()`.
+3. Buka **View ▶ Logs**. Jika perbedaan >5 baris, jalankan update.
 
-### Metode 2: Copy Manual
+---
 
-Gunakan jika auto-update gagal:
+### 📋 Metode 3: Copy Manual (Fallback)
 
-1. Buka file [Kode.js](Kode.js) di repo ini
-2. Klik **Raw** (atau copy seluruh isi)
-3. Buka Apps Script di spreadsheet Anda
-4. **Hapus seluruh isi** `Code.gs` yang lama
-5. **Paste** kode baru
-6. Klik **Save** (💾)
+Gunakan jika kedua metode di atas tidak bisa:
 
-### Metode 2: Via clasp (untuk developer)
+1. Buka [Kode.js di GitHub](https://raw.githubusercontent.com/misterjohn46/Smart-School-Wrapper/main/Kode.js)
+2. **Ctrl+A** (Select All) lalu **Ctrl+C** (Copy)
+3. Buka Apps Script editor spreadsheet Anda (**Extensions ▶ Apps Script**)
+4. **Ctrl+A** lalu **Delete** — hapus SEMUA isi `Code.gs` yang lama
+5. **Ctrl+V** (Paste) kode baru
+6. Klik ikon **💾 Save**
+7. Deploy ulang Web App (lihat langkah 6 di Metode 2)
+
+---
+
+### 🛠 Metode 4: Via clasp (Untuk Developer)
 
 ```bash
-# Clone repo wrapper
 git clone https://github.com/misterjohn46/Smart-School-Wrapper.git
 cd Smart-School-Wrapper
-
-# Login clasp
 npx @google/clasp login
-
-# Buat .clasp.json dengan script ID Anda
 echo '{"scriptId":"SCRIPT_ID_ANDA"}' > .clasp.json
-
-# Push ke Apps Script
 npx @google/clasp push
 ```
 
-### Update Library Version
+---
 
-Jika CoreSystem library di-update:
+### Update Library CoreSystem
+
+Jika library CoreSystem di-update (biasanya diinformasikan oleh admin Smart School):
 
 1. Buka Apps Script editor
-2. Klik **Libraries**
-3. Pilih `CoreSystem`
-4. Ganti versi ke yang terbaru
-5. Save
+2. Klik **Libraries** di panel kiri
+3. Pilih library `CoreSystem`
+4. Ganti **Version** ke versi terbaru
+5. Klik **Save**
+
+---
+
+## Ringkasan Metode Update
+
+| Metode | Cocok Untuk | Kesulitan | Waktu |
+|--------|-------------|-----------|-------|
+| 1. Web Updater | Semua klien (non-teknisi) | ⭐ Sangat Mudah | ~1 menit |
+| 2. Auto-Update | Klien yang sudah setup awal | ⭐⭐ Mudah | ~2 menit |
+| 3. Copy Manual | Fallback / pertama kali | ⭐⭐⭐ Sedang | ~5 menit |
+| 4. clasp | Developer | ⭐⭐⭐⭐ Mahir | ~3 menit |
+
+> **Rekomendasi:** Gunakan selalu **Metode 1: Web Updater** — cukup buka link, login, klik Push.
 
 ---
 
