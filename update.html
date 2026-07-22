@@ -349,7 +349,10 @@
     // ========== CONFIG ==========
     const GITHUB_RAW = 'https://raw.githubusercontent.com/misterjohn46/Smart-School-Wrapper/main/Kode.js';
     const APPS_SCRIPT_API = 'https://script.googleapis.com/v1/projects';
-    const SCOPES = ['https://www.googleapis.com/auth/script.projects'];
+    const SCOPES = [
+      'https://www.googleapis.com/auth/script.projects',
+      'https://www.googleapis.com/auth/userinfo.email'
+    ];
 
     // ========== STATE ==========
     let accessToken = null;
@@ -371,15 +374,9 @@
       const saved = localStorage.getItem('ss_wrapper_script_id');
       if (saved) scriptIdInput.value = saved;
 
-      const savedToken = localStorage.getItem('ss_wrapper_token');
-      const savedEmail = localStorage.getItem('ss_wrapper_email');
-      const tokenExpiry = localStorage.getItem('ss_wrapper_token_expiry');
-
-      if (savedToken && tokenExpiry && Date.now() < parseInt(tokenExpiry)) {
-        accessToken = savedToken;
-        userEmail = savedEmail;
-        updateConnectUI(true);
-      }
+      localStorage.removeItem('ss_wrapper_token');
+      localStorage.removeItem('ss_wrapper_email');
+      localStorage.removeItem('ss_wrapper_token_expiry');
 
       // Enable push if both scriptId and token exist
       updatePushButton();
@@ -412,7 +409,7 @@
         }
         return;
       }
-      tokenClient.requestAccessToken({ prompt: 'consent' });
+      tokenClient.requestAccessToken({ prompt: 'consent select_account' });
     }
 
     function handleTokenResponse(response) {
@@ -433,6 +430,7 @@
       })
         .then(r => r.json())
         .then(data => {
+          if (data.error) throw new Error(data.error.message || data.error);
           userEmail = data.email || 'Connected';
           localStorage.setItem('ss_wrapper_email', userEmail);
           updateConnectUI(true);
