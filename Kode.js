@@ -46,6 +46,54 @@ function _getPengaturanValue_(key) {
   return "";
 }
 
+function _gatewayUrl_() {
+  var url = _getPengaturanValue_("GATEWAY_URL");
+  if (!url) {
+    url = "https://script.google.com/macros/s/AKfycbxxVz6h7HfURmhiyDItiBgolFZiVJ-DNEO4rkI5Pi-ibrLAp3uHLCNXVeb3uifYc7WBdQ/exec";
+  }
+  return url.toString().trim();
+}
+
+function _gatewayCall_(action, args) {
+  var spreadsheetId = _sid();
+  var secret = _getPengaturanValue_("GATEWAY_SECRET");
+  if (!secret) throw new Error("GATEWAY_SECRET belum diset di sheet Pengaturan.");
+
+  var response = UrlFetchApp.fetch(_gatewayUrl_(), {
+    method: "post",
+    contentType: "application/json",
+    payload: JSON.stringify({
+      action: (action || "").toString().trim(),
+      spreadsheet_id: spreadsheetId,
+      tenant_id: spreadsheetId,
+      gateway_secret: secret,
+      args: Array.isArray(args) ? args : []
+    }),
+    followRedirects: true,
+    muteHttpExceptions: true
+  });
+
+  var httpCode = response.getResponseCode();
+  var body = response.getContentText();
+  var result;
+  try {
+    result = JSON.parse(body);
+  } catch (e) {
+    throw new Error("Respons Gateway bukan JSON (HTTP " + httpCode + "). Periksa deployment dan akses Web App.");
+  }
+
+  if (httpCode < 200 || httpCode >= 300 || !result || result.status !== "sukses") {
+    throw new Error((result && result.pesan) ? result.pesan : "Gateway gagal HTTP " + httpCode + ".");
+  }
+  return result.data;
+}
+
+function CEK_API_GATEWAY() {
+  var result = _gatewayCall_("gatewayHealth", []);
+  Logger.log(JSON.stringify(result));
+  return result;
+}
+
 function _parseQueryStringMap_(qs) {
   var out = {};
   var raw = (qs || "").toString().replace(/^\?/, "");
