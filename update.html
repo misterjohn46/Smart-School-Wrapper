@@ -523,15 +523,54 @@
         log('dim', `📤  Push ke project: ${scriptId}...`);
 
         const apiUrl = `${APPS_SCRIPT_API}/${scriptId}/content`;
+        const projectResponse = await fetch(apiUrl, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
+
+        if (!projectResponse.ok) {
+          const errData = await projectResponse.json().catch(() => ({}));
+          const errMsg = errData.error?.message || `HTTP ${projectResponse.status}`;
+          if (projectResponse.status === 403) {
+            throw new Error(`Permission denied (403). Pastikan akun Anda adalah editor/pemilik project.`);
+          }
+          if (projectResponse.status === 404) {
+            throw new Error(`Project tidak ditemukan (404). Cek kembali Script ID.`);
+          }
+          throw new Error(errMsg);
+        }
+
+        const projectContent = await projectResponse.json();
+        const existingFiles = Array.isArray(projectContent.files) ? projectContent.files : [];
+        if (!existingFiles.some(file => file.type === 'JSON' && file.name === 'appsscript')) {
+          throw new Error('Project Apps Script tidak memiliki manifest appsscript.json. Buka editor Apps Script lalu pastikan file Project Settings/manifest tersedia.');
+        }
+
+        let updatedServerFile = false;
+        const files = existingFiles.map(file => {
+          if (file.type === 'SERVER_JS' && (file.name === 'Code' || file.name.toLowerCase().includes('kode'))) {
+            updatedServerFile = true;
+            return {
+              name: file.name,
+              type: file.type,
+              source: kodeContent
+            };
+          }
+          return file;
+        });
+
+        if (!updatedServerFile) {
+          files.push({
+            name: 'Code',
+            type: 'SERVER_JS',
+            source: kodeContent
+          });
+        }
+
         const body = JSON.stringify({
           scriptId: scriptId,
-          files: [
-            {
-              name: 'Code',
-              type: 'SERVER_JS',
-              source: kodeContent
-            }
-          ]
+          files: files
         });
 
         const pushResponse = await fetch(apiUrl, {
