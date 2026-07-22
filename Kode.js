@@ -322,7 +322,7 @@ function gantiPasswordGuru(nip, passwordLama, passwordBaru) { return CoreSystem.
 function gantiPasswordSiswa(nis, passwordLama, passwordBaru) { return CoreSystem.gantiPasswordSiswa(nis, passwordLama, passwordBaru, _sid()); }
 function updateFotoSiswaPortal(nis, fileData, fileName, mimeType) { return CoreSystem.updateFotoSiswaPortal(nis, fileData, fileName, mimeType, _sid()); }
 function updateFotoGuruPortal(nip, fileData, fileName, mimeType) { return CoreSystem.updateFotoGuruPortal(nip, fileData, fileName, mimeType, _sid()); }
-function getDataDashboardSekolah() { return CoreSystem.getDataDashboardSekolah(_sid()); }
+function getDataDashboardSekolah() { return _gatewayCall_("getDataDashboardSekolah", ["__SID__"]); }
 function getDataDashboardKepala() { return CoreSystem.getDataDashboardKepala(_sid()); }
 function jalankanOtomatisAlpha() { return CoreSystem.jalankanOtomatisAlpha(_sid()); }
 
