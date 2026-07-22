@@ -533,7 +533,7 @@
           const errData = await projectResponse.json().catch(() => ({}));
           const errMsg = errData.error?.message || `HTTP ${projectResponse.status}`;
           if (projectResponse.status === 403) {
-            throw new Error(`Permission denied (403). Pastikan akun Anda adalah editor/pemilik project.`);
+            throw new Error(`Permission denied saat membaca project (403).\nDetail Google: ${errMsg}\n\nPastikan:\n• Akun Google yang login adalah editor/pemilik Apps Script project\n• Apps Script API sudah aktif di Google Cloud project OAuth updater\n• Scope script.projects sudah diset di OAuth consent screen`);
           }
           if (projectResponse.status === 404) {
             throw new Error(`Project tidak ditemukan (404). Cek kembali Script ID.`);
@@ -587,7 +587,7 @@
           const errMsg = errData.error?.message || `HTTP ${pushResponse.status}`;
           
           if (pushResponse.status === 403) {
-            throw new Error(`Permission denied (403). Pastikan:\n• Akun Anda adalah editor/pemilik project\n• Atau Anda menggunakan API Key yang tepat`);
+            throw new Error(`Permission denied saat push project (403).\nDetail Google: ${errMsg}\n\nPastikan:\n• Akun Google yang login adalah editor/pemilik Apps Script project\n• Apps Script API sudah aktif di Google Cloud project OAuth updater\n• Scope script.projects sudah diset di OAuth consent screen`);
           }
           if (pushResponse.status === 404) {
             throw new Error(`Project tidak ditemukan (404). Cek kembali Script ID.`);
