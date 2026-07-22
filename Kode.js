@@ -603,6 +603,7 @@ function kirimPengumumanKelasWali(k, pesan, pengirim) { return CoreSystem.kirimP
 function ajukanIzinSiswa(f) { return CoreSystem.ajukanIzinSiswa(f, _sid()); }
 function ajukanIzinGuru(data) { return CoreSystem.ajukanIzinGuru(data, _sid()); }
 function getDataAkademikSiswa(n) { return CoreSystem.getDataAkademikSiswa(n, _sid()); }
+function getJadwalGuruUntukIzin(nip, tanggalMulai, tanggalSelesai) { return CoreSystem.getJadwalGuruUntukIzin(nip, tanggalMulai, tanggalSelesai, _sid()); }
 function getJadwalMengajarGuru(n) { return CoreSystem.getJadwalMengajarGuru(n, _sid()); }
 function getMappingKelasMapel(n) { return CoreSystem.getMappingKelasMapel(n, _sid()); }
 function getDataInputNilai(k, m, o) { return CoreSystem.getDataInputNilai(k, m, o || {}, _sid()); }
@@ -1249,6 +1250,8 @@ function getMasterPenggajianGuru() { return CoreSystem.getMasterPenggajianGuru(_
 function simpanMasterPenggajianGuru(form) { return CoreSystem.simpanMasterPenggajianGuru(form, _sid()); }
 function getPengaturanAcaraGaji() { return CoreSystem.getPengaturanAcaraGaji(_sid()); }
 function simpanPengaturanAcaraGaji(form) { return CoreSystem.simpanPengaturanAcaraGaji(form, _sid()); }
+function getPengaturanDisiplinGaji() { return CoreSystem.getPengaturanDisiplinGaji(_sid()); }
+function simpanPengaturanDisiplinGaji(form) { return CoreSystem.simpanPengaturanDisiplinGaji(form, _sid()); }
 function getPengaturanDendaDhuha() { return CoreSystem.getPengaturanDendaDhuha(_sid()); }
 function simpanPengaturanDendaDhuha(form) { return CoreSystem.simpanPengaturanDendaDhuha(form, _sid()); }
 function getPengaturanAbsenDhuha() { return CoreSystem.getPengaturanAbsenDhuha(_sid()); }
@@ -1412,7 +1415,7 @@ function updateWrapper() {
     } else {
       var errData = JSON.parse(result.getContentText());
       var errMsg = errData.error && errData.error.message ? errData.error.message : result.getContentText();
-      
+
       // Cek apakah error karena Apps Script API belum di-enable
       if (errMsg.indexOf("Apps Script API has not been used") !== -1 || errMsg.indexOf("SERVICE_DISABLED") !== -1) {
         var activationUrl = "https://console.developers.google.com/apis/api/script.googleapis.com/overview?project=" + scriptId;
@@ -1425,7 +1428,7 @@ function updateWrapper() {
         Logger.log("❌ Gagal update: " + errMsg);
       }
     }
-    
+
   } catch (e) {
     Logger.log("❌ Error updateWrapper: " + e.toString());
     Logger.log("Kemungkinan penyebab:");
