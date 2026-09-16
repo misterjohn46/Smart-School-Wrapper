@@ -1277,6 +1277,7 @@ function generateRekapHonorPembinaEkskul(filter) { return CoreSystem.generateRek
 function getRekapHonorPembinaEkskul(filter) { return CoreSystem.getRekapHonorPembinaEkskul(filter, _sid()); }
 function getDetailHonorPembinaEkskul(filter, pembinaId) { return CoreSystem.getDetailHonorPembinaEkskul(filter, pembinaId, _sid()); }
 function bayarHonorPembinaEkskul(id, form) { return CoreSystem.bayarHonorPembinaEkskul(id, form, _sid()); }
+function generateSlipHonorPembinaEkskulPDF(filter) { return CoreSystem.generateSlipHonorPembinaEkskulPDF(filter || {}, _sid()); }
 function generateRekapGajiGuru(filter) { return CoreSystem.generateRekapGajiGuru(filter, _sid()); }
 function getRekapGajiGuru(filter) { return CoreSystem.getRekapGajiGuru(filter, _sid()); }
 function generateSlipGajiGuruPDF(filter) { return CoreSystem.generateSlipGajiGuruPDF(filter, _sid()); }
