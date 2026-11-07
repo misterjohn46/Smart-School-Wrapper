@@ -579,6 +579,7 @@ function updateBerkasSPMBPublic(form) { return CoreSystem.updateBerkasSPMBPublic
 
 // F. LAPORAN PDF & JURNAL
 function getDaftarMapel() { return CoreSystem.getDaftarMapel(_sid()); }
+function getLaporanAbsensiHarian(filter) { return CoreSystem.getLaporanAbsensiHarian(filter, _sid()); }
 function generateLaporanPDF(f) { return CoreSystem.generateLaporanPDF(f, _sid()); }
 function generateLaporanGuruPDF(f) { return CoreSystem.generateLaporanGuruPDF(f, _sid()); }
 function generateLaporanJurnalPDF(f) { return CoreSystem.generateLaporanJurnalPDF(f, _sid()); }
