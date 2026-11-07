@@ -109,19 +109,24 @@ function onOpen() {
 
 // --- SETUP AWAL (TULIS KE SHEET PENGATURAN) ---
 function SETUP_SEKOLAH() {
-  // Paste langsung isi object `firebaseConfig` dari Firebase console ke sini.
-  // Contoh:
-  // const firebaseConfig = { ... };
-  // Yang dipakai cukup bagian { ... }-nya saja.
+  // PENTING: Ganti object di bawah dengan konfigurasi Firebase milik sekolah Anda sendiri!
+  // Dapatkan dari: Firebase Console > Project Settings > General > Your apps (Web app)
   var firebaseConfig = {
-    apiKey: "AIzaSyCg1faQr-Zt9C8Y8Ghj2RAAmxc-TEnrcpQ",
-    authDomain: "smartschool-13a64.firebaseapp.com",
-    databaseURL: "https://smartschool-13a64-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "smartschool-13a64",
-    storageBucket: "smartschool-13a64.firebasestorage.app",
-    messagingSenderId: "217024692178",
-    appId: "1:217024692178:web:0f551456e70af99bd7520b"
+    apiKey: "PASTE_API_KEY_ANDA_DI_SINI",
+    authDomain: "project-sekolah-anda.firebaseapp.com",
+    databaseURL: "https://project-sekolah-anda-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "project-sekolah-anda",
+    storageBucket: "project-sekolah-anda.firebasestorage.app",
+    messagingSenderId: "123456789012",
+    appId: "1:123456789012:web:abcdef123456"
   };
+
+  if (firebaseConfig.apiKey === "PASTE_API_KEY_ANDA_DI_SINI" || !firebaseConfig.apiKey) {
+    var msg = "⚠️ PERINGATAN: Harap isi data firebaseConfig dengan kredensial Firebase sekolah Anda sendiri sebelum menjalankan fungsi ini!";
+    Logger.log(msg);
+    try { SpreadsheetApp.getUi().alert(msg); } catch (e) {}
+    return;
+  }
 
   _upsertPengaturan_(
     "FIREBASE_CONFIG_JSON",
